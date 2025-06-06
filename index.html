@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D&D 5e Encounter Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+        
+        .input-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+        }
+        
+        .results-section {
+            padding: 30px;
+            background: white;
+        }
+        
+        .section-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .input-group h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        input[type="number"], input[type="text"], select {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="number"]:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 5px;
+            outline: none;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #2980b9;
+            transform: scale(1.1);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="range"]::-moz-range-thumb:hover {
+            background: #2980b9;
+            transform: scale(1.1);
+        }
+        
+        .player-card {
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .player-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+        
+        .remove-btn:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+            padding: 10px 20px;
+            margin-top: 10px;
+        }
+        
+        .save-load-section {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .save-load-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .btn-small {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-small:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-load {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        }
+        
+        .btn-load:hover {
+            box-shadow: 0 3px 10px rgba(23, 162, 184, 0.3);
+        }
+        
+        .results-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #28a745;
+        }
+        
+        .results-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #3498db;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .encounter-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .encounter-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .encounter-card:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .encounter-card.selected {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+        
+        .encounter-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .encounter-desc {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .monster-results {
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 5px solid #28a745;
+        }
+        
+        .hit-rate-table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .hit-rate-table th {
+            background: #3498db;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .hit-rate-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .hit-rate-table tr.recommended {
+            background: #e3f2fd;
+            font-weight: bold;
+        }
+        
+        .distribution-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .distribution-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .debug-info {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            font-family: monospace;
+            line-height: 1.6;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            text-align: left;
+            border-radius: 8px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            font-size: 0.85em;
+            line-height: 1.4;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .info-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            font-size: 12px;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-section {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .encounter-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .save-load-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎲 D&D 5e Encounter Calculator</h1>
+            <p>Build perfect encounters based on your party's actual capabilities</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title">Party Setup</h2>
+                
+                <!-- Save/Load Section -->
+                <div class="save-load-section">
+                    <div class="save-load-row">
+                        <input type="text" id="setup-name" placeholder="Enter setup name..." value="My Party">
+                        <button class="btn-small" onclick="EncounterCalculator.saveSetup()">💾 Save Setup</button>
+                        <button class="btn-small btn-load" onclick="EncounterCalculator.showLoadMenu()">📂 Load Setup</button>
+                    </div>
+                </div>
+                
+                <!-- Combat Parameters -->
+                <div class="input-group">
+                    <h3>Combat Parameters 
+                        <span class="tooltip">
+                            <span class="info-icon">?</span>
+                            <span class="tooltiptext">Adjust the expected hit chance for your party. The AC shown is based on your party's average attack bonus.</span>
+                        </span>
+                    </h3>
+                    <div class="form-group">
+                        <label for="hit-chance">Hit Chance: <span id="hit-chance-value">65</span>% (Target AC: <span id="target-ac">15</span>)</label>
+                        <input type="range" id="hit-chance" min="30" max="90" value="65" step="5" 
+                               oninput="EncounterCalculator.updateHitChance(this.value)">
+                        <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 0.85em; color: #666;">
+                            <span>30% (Very Hard)</span>
+                            <span>65% (Standard)</span>
+                            <span>90% (Very Easy)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Party Members -->
+                <div class="input-group">
+                    <h3>Party Members 
+                        <span class="tooltip">
+                            <span class="info-icon">?</span>
+                            <span class="tooltiptext">Add your party members and customize their stats. Values auto-populate based on class and level but can be manually adjusted.</span>
+                        </span>
+                    </h3>
+                    <div id="party-list"></div>
+                    <button class="btn btn-secondary" onclick="EncounterCalculator.addPlayer()">➕ Add Party Member</button>
+                </div>
+                
+                <button class="btn" onclick="EncounterCalculator.calculateEncounter()">🎯 Calculate Encounter</button>
+            </div>
+            
+            <div class="results-section">
+                <h2 class="section-title">Encounter Results</h2>
+                
+                <div id="party-analysis" class="results-card" style="display: none;">
+                    <h3>📊 Party Analysis</h3>
+                    <div class="stat-grid">
+                        <div class="stat-item">
+                            <span class="stat-value" id="base-dpr">--</span>
+                            <div class="stat-label">Base DPR
+                                <span class="tooltip">
+                                    <span class="info-icon">?</span>
+                                    <span class="tooltiptext">Sustainable damage without using limited resources</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="burst-dpr">--</span>
+                            <div class="stat-label">Burst DPR
+                                <span class="tooltip">
+                                    <span class="info-icon">?</span>
+                                    <span class="tooltiptext">Peak damage when using spell slots and abilities</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="effective-hp">--</span>
+                            <div class="stat-label">Effective HP
+                                <span class="tooltip">
+                                    <span class="info-icon">?</span>
+                                    <span class="tooltiptext">Total damage the party can absorb including healing</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="debug-info" class="debug-info" style="display: none;"></div>
+                </div>
+                
+                <div id="encounter-type" class="results-card" style="display: none;">
+                    <h3>🎯 Choose Encounter Type</h3>
+                    <div class="encounter-options">
+                        <div class="encounter-card" onclick="EncounterCalculator.selectEncounter('quick', this)">
+                            <div class="encounter-title">Quick Skirmish</div>
+                            <div class="encounter-desc">2-3 rounds<br>Light resources</div>
+                        </div>
+                        <div class="encounter-card selected" onclick="EncounterCalculator.selectEncounter('standard', this)">
+                            <div class="encounter-title">Standard Fight</div>
+                            <div class="encounter-desc">4-5 rounds<br>Medium resources</div>
+                        </div>
+                        <div class="encounter-card" onclick="EncounterCalculator.selectEncounter('boss', this)">
+                            <div class="encounter-title">Boss Battle</div>
+                            <div class="encounter-desc">6-8 rounds<br>Heavy resources</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="monster-stats" class="monster-results" style="display: none;">
+                    <h3>👹 Monster Requirements</h3>
+                    <div class="stat-grid">
+                        <div class="stat-item">
+                            <span class="stat-value" id="monster-hp">--</span>
+                            <div class="stat-label">Total HP Pool</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="monster-damage">--</span>
+                            <div class="stat-label">Total Damage</div>
+                        </div>
+                    </div>
+                    
+                    <h4 style="margin-top: 20px;">Attack & Save Bonuses</h4>
+                    <table class="hit-rate-table">
+                        <thead>
+                            <tr>
+                                <th>Hit %</th>
+                                <th>Attack Bonus</th>
+                                <th>Save DC</th>
+                                <th>Difficulty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hit-rate-table"></tbody>
+                    </table>
+                    
+                    <h4>Enemy Distribution Options</h4>
+                    <div id="distribution-options" class="distribution-options"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Main Encounter Calculator Module
+        const EncounterCalculator = (function() {
+            // Private state
+            let state = {
+                selectedEncounter: 'standard',
+                party: [],
+                partyId: 0
+            };
+            
+            // Game data
+            const gameData = {
+                classes: {
+                    fighter: { hp: 10, defaultWeapon: 'longsword', attacksAt5: 2, ac: 16, caster: false },
+                    barbarian: { hp: 12, defaultWeapon: 'greataxe', attacksAt5: 2, ac: 14, caster: false },
+                    paladin: { hp: 10, defaultWeapon: 'longsword', attacksAt5: 2, ac: 17, caster: 'half' },
+                    ranger: { hp: 10, defaultWeapon: 'longbow', attacksAt5: 2, ac: 15, caster: 'half' },
+                    rogue: { hp: 8, defaultWeapon: 'shortsword', attacksAt5: 1, ac: 15, caster: false, sneakAttack: true },
+                    monk: { hp: 8, defaultWeapon: 'shortsword', attacksAt5: 2, ac: 15, caster: false },
+                    wizard: { hp: 6, defaultWeapon: 'firebolt', attacksAt5: 1, ac: 12, caster: 'full' },
+                    sorcerer: { hp: 6, defaultWeapon: 'firebolt', attacksAt5: 1, ac: 12, caster: 'full' },
+                    warlock: { hp: 8, defaultWeapon: 'eldritch-blast', attacksAt5: 1, ac: 12, caster: 'full' },
+                    cleric: { hp: 8, defaultWeapon: 'mace', attacksAt5: 1, ac: 14, caster: 'full' },
+                    druid: { hp: 8, defaultWeapon: 'scimitar', attacksAt5: 1, ac: 13, caster: 'full' },
+                    bard: { hp: 8, defaultWeapon: 'rapier', attacksAt5: 1, ac: 13, caster: 'full' }
+                },
+                
+                weapons: {
+                    // Simple Melee
+                    'club': { damage: '1d4', type: 'simple' },
+                    'dagger': { damage: '1d4', type: 'simple' },
+                    'greatclub': { damage: '1d8', type: 'simple' },
+                    'handaxe': { damage: '1d6', type: 'simple' },
+                    'javelin': { damage: '1d6', type: 'simple' },
+                    'light-hammer': { damage: '1d4', type: 'simple' },
+                    'mace': { damage: '1d6', type: 'simple' },
+                    'quarterstaff': { damage: '1d6', type: 'simple' },
+                    'sickle': { damage: '1d4', type: 'simple' },
+                    'spear': { damage: '1d6', type: 'simple' },
+                    // Simple Ranged
+                    'crossbow-light': { damage: '1d8', type: 'simple' },
+                    'dart': { damage: '1d4', type: 'simple' },
+                    'shortbow': { damage: '1d6', type: 'simple' },
+                    'sling': { damage: '1d4', type: 'simple' },
+                    // Martial Melee
+                    'battleaxe': { damage: '1d8', type: 'martial' },
+                    'flail': { damage: '1d8', type: 'martial' },
+                    'glaive': { damage: '1d10', type: 'martial' },
+                    'greataxe': { damage: '1d12', type: 'martial' },
+                    'greatsword': { damage: '2d6', type: 'martial' },
+                    'halberd': { damage: '1d10', type: 'martial' },
+                    'lance': { damage: '1d12', type: 'martial' },
+                    'longsword': { damage: '1d8', type: 'martial' },
+                    'maul': { damage: '2d6', type: 'martial' },
+                    'morningstar': { damage: '1d8', type: 'martial' },
+                    'pike': { damage: '1d10', type: 'martial' },
+                    'rapier': { damage: '1d8', type: 'martial' },
+                    'scimitar': { damage: '1d6', type: 'martial' },
+                    'shortsword': { damage: '1d6', type: 'martial' },
+                    'trident': { damage: '1d6', type: 'martial' },
+                    'war-pick': { damage: '1d8', type: 'martial' },
+                    'warhammer': { damage: '1d8', type: 'martial' },
+                    'whip': { damage: '1d4', type: 'martial' },
+                    // Martial Ranged
+                    'blowgun': { damage: '1', type: 'martial' },
+                    'crossbow-hand': { damage: '1d6', type: 'martial' },
+                    'crossbow-heavy': { damage: '1d10', type: 'martial' },
+                    'longbow': { damage: '1d8', type: 'martial' },
+                    'net': { damage: '0', type: 'martial' },
+                    // Cantrips
+                    'firebolt': { damage: '1d10', type: 'cantrip' },
+                    'eldritch-blast': { damage: '1d10', type: 'cantrip' }
+                },
+                
+                feats: {
+                    'none': { name: 'None', usageRate: 0, applicable: [] },
+                    'great-weapon-master': { 
+                        name: 'Great Weapon Master', 
+                        usageRate: 0.6,
+                        applicable: ['greatsword', 'greataxe', 'maul', 'glaive', 'halberd', 'pike']
+                    },
+                    'sharpshooter': { 
+                        name: 'Sharpshooter', 
+                        usageRate: 0.6,
+                        applicable: ['shortbow', 'longbow', 'crossbow-light', 'crossbow-hand', 'crossbow-heavy', 'dart', 'sling']
+                    },
+                    'polearm-master': { 
+                        name: 'Polearm Master', 
+                        usageRate: 0.9,
+                        applicable: ['glaive', 'halberd', 'quarterstaff', 'spear', 'pike']
+                    }
+                },
+                
+                encounters: {
+                    quick: { rounds: 2.5, resourceUse: 0.15 },
+                    standard: { rounds: 4.5, resourceUse: 0.30 },
+                    boss: { rounds: 7, resourceUse: 0.50 }
+                }
+            };
+            
+            // Utility functions
+            function calculateWeaponDamage(weaponDamage) {
+                const damageStr = String(weaponDamage);
+                if (!damageStr.includes('d')) {
+                    return parseFloat(damageStr) || 0;
+                }
+                
+                const parts = damageStr.split('d');
+                if (parts.length !== 2) return 0;
+                
+                const count = parseInt(parts[0]) || 1;
+                const size = parseInt(parts[1]) || 0;
+                
+                return count * (size / 2 + 0.5);
+            }
+            
+            function parseBonusDPR(value) {
+                if (!value || value === '0') return 0;
+                
+                value = String(value).trim();
+                if (value.includes('d')) {
+                    return calculateWeaponDamage(value);
+                }
+                
+                return parseFloat(value) || 0;
+            }
+            
+            // Public API
+            return {
+                // Initialize the calculator
+                init() {
+                    this.addPlayer();
+                },
+                
+                // Add a new player
+                addPlayer() {
+                    const id = ++state.partyId;
+                    const playerHtml = this.createPlayerHTML(id);
+                    
+                    document.getElementById('party-list').insertAdjacentHTML('beforeend', playerHtml);
+                    state.party.push({ id });
+                    
+                    // Set defaults
+                    const defaultWeapon = gameData.classes['fighter'].defaultWeapon;
+                    document.getElementById(`weapon-${id}`).value = defaultWeapon;
+                    this.setDefaultValues(id);
+                    this.updateRemoveButtons();
+                },
+                
+                // Create player HTML
+                createPlayerHTML(id) {
+                    return `
+                        <div class="player-card" data-player-id="${id}">
+                            <div class="player-header">
+                                <span class="player-name">Character ${id}</span>
+                                ${state.party.length > 0 ? `<button class="remove-btn" onclick="EncounterCalculator.removePlayer(${id})">Remove</button>` : ''}
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Class</label>
+                                    <select id="class-${id}" onchange="EncounterCalculator.updateClass(${id})">
+                                        ${Object.keys(gameData.classes).map(c => 
+                                            `<option value="${c}">${c.charAt(0).toUpperCase() + c.slice(1)}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Level</label>
+                                    <input type="number" id="level-${id}" min="1" max="20" value="5" onchange="EncounterCalculator.updateLevel(${id})">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Weapon</label>
+                                    <select id="weapon-${id}">
+                                        <optgroup label="Simple Melee">
+                                            <option value="club">Club (1d4)</option>
+                                            <option value="dagger">Dagger (1d4)</option>
+                                            <option value="greatclub">Greatclub (1d8)</option>
+                                            <option value="handaxe">Handaxe (1d6)</option>
+                                            <option value="javelin">Javelin (1d6)</option>
+                                            <option value="light-hammer">Light Hammer (1d4)</option>
+                                            <option value="mace">Mace (1d6)</option>
+                                            <option value="quarterstaff">Quarterstaff (1d6)</option>
+                                            <option value="sickle">Sickle (1d4)</option>
+                                            <option value="spear">Spear (1d6)</option>
+                                        </optgroup>
+                                        <optgroup label="Simple Ranged">
+                                            <option value="crossbow-light">Light Crossbow (1d8)</option>
+                                            <option value="dart">Dart (1d4)</option>
+                                            <option value="shortbow">Shortbow (1d6)</option>
+                                            <option value="sling">Sling (1d4)</option>
+                                        </optgroup>
+                                        <optgroup label="Martial Melee">
+                                            <option value="battleaxe">Battleaxe (1d8)</option>
+                                            <option value="flail">Flail (1d8)</option>
+                                            <option value="glaive">Glaive (1d10)</option>
+                                            <option value="greataxe">Greataxe (1d12)</option>
+                                            <option value="greatsword">Greatsword (2d6)</option>
+                                            <option value="halberd">Halberd (1d10)</option>
+                                            <option value="lance">Lance (1d12)</option>
+                                            <option value="longsword">Longsword (1d8)</option>
+                                            <option value="maul">Maul (2d6)</option>
+                                            <option value="morningstar">Morningstar (1d8)</option>
+                                            <option value="pike">Pike (1d10)</option>
+                                            <option value="rapier">Rapier (1d8)</option>
+                                            <option value="scimitar">Scimitar (1d6)</option>
+                                            <option value="shortsword">Shortsword (1d6)</option>
+                                            <option value="trident">Trident (1d6)</option>
+                                            <option value="war-pick">War Pick (1d8)</option>
+                                            <option value="warhammer">Warhammer (1d8)</option>
+                                            <option value="whip">Whip (1d4)</option>
+                                        </optgroup>
+                                        <optgroup label="Martial Ranged">
+                                            <option value="blowgun">Blowgun (1)</option>
+                                            <option value="crossbow-hand">Hand Crossbow (1d6)</option>
+                                            <option value="crossbow-heavy">Heavy Crossbow (1d10)</option>
+                                            <option value="longbow">Longbow (1d8)</option>
+                                            <option value="net">Net (0)</option>
+                                        </optgroup>
+                                        <optgroup label="Cantrips">
+                                            <option value="firebolt">Fire Bolt (1d10)</option>
+                                            <option value="eldritch-blast">Eldritch Blast (1d10)</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Attack Bonus</label>
+                                    <input type="number" id="attack-bonus-${id}" value="7">
+                                </div>
+                                <div class="form-group">
+                                    <label>Save DC</label>
+                                    <input type="number" id="save-dc-${id}" value="15">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>AC</label>
+                                    <input type="number" id="ac-${id}" value="16">
+                                </div>
+                                <div class="form-group">
+                                    <label>HP</label>
+                                    <input type="number" id="hp-${id}" value="40">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Feat</label>
+                                    <select id="feat-${id}">
+                                        <option value="none">None</option>
+                                        <option value="great-weapon-master">Great Weapon Master</option>
+                                        <option value="sharpshooter">Sharpshooter</option>
+                                        <option value="polearm-master">Polearm Master</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Bonus DPR
+                                        <span class="tooltip">
+                                            <span class="info-icon">?</span>
+                                            <span class="tooltiptext">Add extra damage from subclass features, magic items, or spells. Enter dice (2d8, 1d6) or a number (9, 3.5)</span>
+                                        </span>
+                                    </label>
+                                    <input type="text" id="bonus-dpr-${id}" value="0" placeholder="e.g. 2d8 or 9">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                
+                // Remove player
+                removePlayer(id) {
+                    state.party = state.party.filter(p => p.id !== id);
+                    document.querySelector(`[data-player-id="${id}"]`).remove();
+                    this.updateRemoveButtons();
+                },
+                
+                // Update remove buttons
+                updateRemoveButtons() {
+                    const showRemove = state.party.length > 1;
+                    document.querySelectorAll('.remove-btn').forEach(btn => {
+                        btn.style.display = showRemove ? 'block' : 'none';
+                    });
+                },
+                
+                // Update class
+                updateClass(id) {
+                    const className = document.getElementById(`class-${id}`).value;
+                    const defaultWeapon = gameData.classes[className].defaultWeapon;
+                    document.getElementById(`weapon-${id}`).value = defaultWeapon;
+                    this.setDefaultValues(id);
+                },
+                
+                // Update level
+                updateLevel(id) {
+                    this.setDefaultValues(id);
+                },
+                
+                // Set default values
+                setDefaultValues(id) {
+                    const className = document.getElementById(`class-${id}`).value;
+                    const level = parseInt(document.getElementById(`level-${id}`).value);
+                    const classInfo = gameData.classes[className];
+                    
+                    const profBonus = 2 + Math.floor((level - 1) / 4);
+                    const abilityMod = level < 4 ? 3 : level < 8 ? 4 : 5;
+                    
+                    document.getElementById(`attack-bonus-${id}`).value = profBonus + abilityMod;
+                    document.getElementById(`save-dc-${id}`).value = 8 + profBonus + abilityMod;
+                    document.getElementById(`ac-${id}`).value = classInfo.ac;
+                    document.getElementById(`hp-${id}`).value = classInfo.hp * level + 10;
+                },
+                
+                // Update hit chance
+                updateHitChance(value) {
+                    document.getElementById('hit-chance-value').textContent = value;
+                    
+                    let totalAttackBonus = 0;
+                    let count = 0;
+                    
+                    state.party.forEach(member => {
+                        const attackBonus = parseInt(document.getElementById(`attack-bonus-${member.id}`).value);
+                        if (!isNaN(attackBonus)) {
+                            totalAttackBonus += attackBonus;
+                            count++;
+                        }
+                    });
+                    
+                    if (count > 0) {
+                        const avgAttackBonus = Math.round(totalAttackBonus / count);
+                        const targetAC = Math.round(21 - (value / 100 * 20) + avgAttackBonus);
+                        document.getElementById('target-ac').textContent = targetAC;
+                    }
+                },
+                
+                // Main calculation
+                calculateEncounter() {
+                    const partyData = this.gatherPartyData();
+                    const results = this.calculatePartyStats(partyData);
+                    this.displayResults(results);
+                },
+                
+                // Gather party data
+                gatherPartyData() {
+                    const players = [];
+                    
+                    state.party.forEach(member => {
+                        players.push({
+                            class: document.getElementById(`class-${member.id}`).value,
+                            level: parseInt(document.getElementById(`level-${member.id}`).value),
+                            weapon: document.getElementById(`weapon-${member.id}`).value,
+                            attackBonus: parseInt(document.getElementById(`attack-bonus-${member.id}`).value),
+                            saveDC: parseInt(document.getElementById(`save-dc-${member.id}`).value),
+                            ac: parseInt(document.getElementById(`ac-${member.id}`).value),
+                            hp: parseInt(document.getElementById(`hp-${member.id}`).value),
+                            feat: document.getElementById(`feat-${member.id}`).value,
+                            bonusDPRInput: document.getElementById(`bonus-dpr-${member.id}`).value,
+                            bonusDPR: parseBonusDPR(document.getElementById(`bonus-dpr-${member.id}`).value)
+                        });
+                    });
+                    
+                    return players;
+                },
+                
+                // Calculate party stats
+                calculatePartyStats(players) {
+                    let totalBaseDPR = 0;
+                    let totalHP = 0;
+                    let totalAC = 0;
+                    let spellSlots = 0;
+                    let debugInfo = [];
+                    
+                    // Get the hit chance from the slider
+                    const globalHitChance = parseInt(document.getElementById('hit-chance').value) / 100;
+                    
+                    // Calculate average attack bonus for the party
+                    const avgAttackBonus = players.reduce((sum, p) => sum + p.attackBonus, 0) / players.length;
+                    
+                    players.forEach(player => {
+                        const classInfo = gameData.classes[player.class];
+                        const weaponInfo = gameData.weapons[player.weapon];
+                        const featInfo = gameData.feats[player.feat];
+                        
+                        // Calculate base weapon damage
+                        let weaponDamage = calculateWeaponDamage(weaponInfo.damage);
+                        
+                        // Determine attacks per round
+                        let attacksPerRound = 1;
+                        if (player.level >= 5 && classInfo.attacksAt5 > 1) {
+                            attacksPerRound = classInfo.attacksAt5;
+                        }
+                        if (player.class === 'fighter') {
+                            if (player.level >= 20) attacksPerRound = 4;
+                            else if (player.level >= 11) attacksPerRound = 3;
+                        }
+                        
+                        // Handle Eldritch Blast
+                        if (player.weapon === 'eldritch-blast') {
+                            if (player.level >= 17) attacksPerRound = 4;
+                            else if (player.level >= 11) attacksPerRound = 3;
+                            else if (player.level >= 5) attacksPerRound = 2;
+                            else attacksPerRound = 1;
+                        }
+                        
+                        // Handle cantrip scaling
+                        if (weaponInfo.type === 'cantrip' && player.weapon !== 'eldritch-blast') {
+                            const cantripScale = Math.floor((player.level - 1) / 4) + 1;
+                            weaponDamage = weaponDamage * cantripScale;
+                        }
+                        
+                        // Calculate sneak attack
+                        let sneakAttackDamage = 0;
+                        if (classInfo.sneakAttack) {
+                            const sneakDice = Math.ceil(player.level / 2);
+                            sneakAttackDamage = sneakDice * 3.5;
+                        }
+                        
+                        // Start with the global hit chance
+                        let hitChance = globalHitChance;
+                        
+                        // Adjust hit chance based on individual attack bonus differences
+                        // This allows characters with higher/lower attack bonuses to be more/less accurate
+                        const bonusDifference = player.attackBonus - avgAttackBonus;
+                        if (Math.abs(bonusDifference) > 0) {
+                            // Each point of attack bonus difference = 5% hit chance
+                            hitChance = Math.min(0.95, Math.max(0.05, globalHitChance + (bonusDifference * 0.05)));
+                        }
+                        
+                        // Calculate feat effects
+                        let featDamage = 0;
+                        let featAttacks = 0;
+                        
+                        if (player.feat !== 'none' && featInfo.applicable.includes(player.weapon)) {
+                            if (player.feat === 'great-weapon-master' || player.feat === 'sharpshooter') {
+                                featDamage = 10 * featInfo.usageRate;
+                                // Apply -5 penalty when using the feat
+                                const penaltyReduction = 5 * featInfo.usageRate * 0.05;
+                                hitChance = Math.max(0.05, hitChance - penaltyReduction);
+                            } else if (player.feat === 'polearm-master') {
+                                featAttacks = featInfo.usageRate;
+                                featDamage = calculateWeaponDamage('1d4') * featAttacks;
+                            }
+                        }
+                        
+                        // Calculate total DPR
+                        const baseAttackDamage = weaponDamage + (player.feat === 'great-weapon-master' || player.feat === 'sharpshooter' ? featDamage : 0);
+                        const baseDamagePerRound = (baseAttackDamage * attacksPerRound) + sneakAttackDamage + featDamage + player.bonusDPR;
+                        const dpr = baseDamagePerRound * hitChance;
+                        
+                        totalBaseDPR += dpr;
+                        totalHP += player.hp;
+                        totalAC += player.ac;
+                        
+                        // Count spell slots
+                        if (classInfo.caster === 'full') {
+                            spellSlots += Math.min(player.level, 9) * 2;
+                        } else if (classInfo.caster === 'half') {
+                            spellSlots += Math.floor(player.level / 2) * 2;
+                        }
+                        
+                        // Build debug info
+                        let featNote = '';
+                        if (player.feat !== 'none' && featInfo.applicable.includes(player.weapon)) {
+                            if (player.feat === 'polearm-master') {
+                                featNote = ` + PAM d4`;
+                            } else {
+                                featNote = ` (${featInfo.name} ${(featInfo.usageRate * 100)}%)`;
+                            }
+                        }
+                        if (player.bonusDPR > 0) {
+                            const bonusText = player.bonusDPRInput && player.bonusDPRInput.includes('d') 
+                                ? ` + ${player.bonusDPRInput} (${player.bonusDPR})` 
+                                : ` + ${player.bonusDPR} bonus`;
+                            featNote += bonusText;
+                        }
+                        
+                        debugInfo.push(`${player.class} L${player.level} (${weaponInfo.damage}): ${weaponDamage} dmg × ${attacksPerRound} attacks${sneakAttackDamage > 0 ? ` + ${sneakAttackDamage.toFixed(1)} SA` : ''}${featNote} = ${baseDamagePerRound.toFixed(1)} × ${(hitChance*100).toFixed(0)}% = ${dpr.toFixed(1)} DPR`);
+                    });
+                    
+                    // Calculate burst DPR
+                    const spellDPR = spellSlots > 0 ? Math.min(spellSlots / 3, 2) * 15 : 0;
+                    const totalBurstDPR = totalBaseDPR + spellDPR;
+                    
+                    // Calculate effective HP
+                    const effectiveHP = Math.round(totalHP * 1.25);
+                    
+                    return {
+                        baseDPR: Math.round(totalBaseDPR),
+                        burstDPR: Math.round(totalBurstDPR),
+                        effectiveHP: effectiveHP,
+                        avgAC: Math.round(totalAC / players.length),
+                        partySize: players.length,
+                        debugInfo: debugInfo
+                    };
+                },
+                
+                // Display results
+                displayResults(results) {
+                    document.getElementById('base-dpr').textContent = results.baseDPR;
+                    document.getElementById('burst-dpr').textContent = results.burstDPR;
+                    document.getElementById('effective-hp').textContent = results.effectiveHP;
+                    
+                    document.getElementById('debug-info').innerHTML = '<strong>Calculation Details:</strong><br>' + 
+                        results.debugInfo.join('<br>') + 
+                        `<br><strong>Total Base DPR: ${results.baseDPR}</strong>`;
+                    document.getElementById('debug-info').style.display = 'block';
+                    
+                    document.getElementById('party-analysis').style.display = 'block';
+                    document.getElementById('encounter-type').style.display = 'block';
+                    
+                    this.calculateMonsterStats(results);
+                },
+                
+                // Select encounter type
+                selectEncounter(type, element) {
+                    state.selectedEncounter = type;
+                    document.querySelectorAll('.encounter-card').forEach(card => {
+                        card.classList.remove('selected');
+                    });
+                    element.classList.add('selected');
+                    
+                    const baseDPR = document.getElementById('base-dpr').textContent;
+                    if (baseDPR !== '--') {
+                        this.calculateEncounter();
+                    }
+                },
+                
+                // Calculate monster stats
+                calculateMonsterStats(partyStats) {
+                    const encounter = gameData.encounters[state.selectedEncounter];
+                    
+                    const avgDPR = (partyStats.baseDPR + partyStats.burstDPR) / 2;
+                    const monsterHP = Math.round(avgDPR * encounter.rounds);
+                    const monsterDamage = Math.round(partyStats.effectiveHP * encounter.resourceUse);
+                    
+                    document.getElementById('monster-hp').textContent = monsterHP;
+                    document.getElementById('monster-damage').textContent = monsterDamage;
+                    
+                    this.generateHitRateTable(partyStats.avgAC);
+                    this.generateDistributionOptions(monsterHP, monsterDamage, encounter.rounds);
+                    
+                    document.getElementById('monster-stats').style.display = 'block';
+                },
+                
+                // Generate hit rate table
+                generateHitRateTable(avgAC) {
+                    const hitRates = [30, 40, 50, 60, 65, 70, 80, 90];
+                    let tableHTML = '';
+                    
+                    hitRates.forEach(rate => {
+                        const rollNeeded = 21 - (rate / 5);
+                        const attackBonus = Math.round(avgAC - rollNeeded + 1);
+                        const failRate = rate;
+                        const successRate = 100 - failRate;
+                        const dcNeeded = Math.round(4 + (21 - (successRate / 5)));
+                        
+                        const difficulty = rate <= 40 ? 'Easy' : rate <= 60 ? 'Medium' : rate <= 75 ? 'Hard' : 'Deadly';
+                        
+                        tableHTML += `
+                            <tr>
+                                <td>${rate}%</td>
+                                <td>+${attackBonus}</td>
+                                <td>DC ${dcNeeded}</td>
+                                <td>${difficulty}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    document.getElementById('hit-rate-table').innerHTML = tableHTML;
+                },
+                
+                // Generate distribution options
+                generateDistributionOptions(hp, totalDamage, rounds) {
+                    const damagePerRound = Math.round(totalDamage / rounds);
+                    
+                    const options = [
+                        {
+                            title: "Single Boss",
+                            desc: `${hp} HP, ${damagePerRound} damage/round`
+                        },
+                        {
+                            title: "Elite Pair",
+                            desc: `${Math.round(hp/2)} HP each, ${Math.round(damagePerRound/2)} dmg/round each`
+                        },
+                        {
+                            title: "Squad (3-4)",
+                            desc: `${Math.round(hp/3.5)} HP each, ${Math.round(damagePerRound/3.5)} dmg/round each`
+                        },
+                        {
+                            title: "Horde (5-8)",
+                            desc: `${Math.round(hp/6)} HP each, ${Math.round(damagePerRound/6)} dmg/round each`
+                        },
+                        {
+                            title: "Boss + Minions",
+                            desc: `Boss: ${Math.round(hp*0.6)} HP, Minions: ${Math.round(hp*0.1)} HP each`
+                        }
+                    ];
+                    
+                    const html = options.map(opt => `
+                        <div class="distribution-card">
+                            <div style="font-weight: bold; margin-bottom: 5px;">${opt.title}</div>
+                            <div style="font-size: 0.85em; color: #666;">${opt.desc}</div>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('distribution-options').innerHTML = html;
+                },
+                
+                // Save/Load functionality
+                saveSetup() {
+                    const setupName = document.getElementById('setup-name').value || 'My Party';
+                    const setup = {
+                        name: setupName,
+                        party: []
+                    };
+                    
+                    state.party.forEach(member => {
+                        setup.party.push({
+                            class: document.getElementById(`class-${member.id}`).value,
+                            level: document.getElementById(`level-${member.id}`).value,
+                            weapon: document.getElementById(`weapon-${member.id}`).value,
+                            attackBonus: document.getElementById(`attack-bonus-${member.id}`).value,
+                            saveDC: document.getElementById(`save-dc-${member.id}`).value,
+                            ac: document.getElementById(`ac-${member.id}`).value,
+                            hp: document.getElementById(`hp-${member.id}`).value,
+                            feat: document.getElementById(`feat-${member.id}`).value || 'none',
+                            bonusDPR: document.getElementById(`bonus-dpr-${member.id}`).value || '0'
+                        });
+                    });
+                    
+                    try {
+                        const setups = JSON.parse(localStorage.getItem('dndEncounterSetups') || '[]');
+                        const existingIndex = setups.findIndex(s => s.name === setupName);
+                        
+                        if (existingIndex >= 0) {
+                            setups[existingIndex] = setup;
+                        } else {
+                            setups.push(setup);
+                        }
+                        
+                        localStorage.setItem('dndEncounterSetups', JSON.stringify(setups));
+                        this.showNotification(`Setup "${setupName}" saved!`);
+                    } catch (e) {
+                        this.showNotification('Unable to save - localStorage not available', 'error');
+                    }
+                },
+                
+                showLoadMenu() {
+                    try {
+                        const setups = JSON.parse(localStorage.getItem('dndEncounterSetups') || '[]');
+                        
+                        if (setups.length === 0) {
+                            this.showNotification('No saved setups found!', 'error');
+                            return;
+                        }
+                        
+                        let html = '<div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); max-height: 400px; overflow-y: auto;">';
+                        html += '<h3 style="margin-bottom: 15px;">Load Setup</h3>';
+                        
+                        setups.forEach((setup, index) => {
+                            html += `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
+                                    <span>${setup.name} (${setup.party.length} members)</span>
+                                    <div>
+                                        <button onclick="EncounterCalculator.loadSetup(${index})" style="background: #28a745; color: white; border: none; padding: 5px 15px; border-radius: 5px; margin-right: 5px; cursor: pointer;">Load</button>
+                                        <button onclick="EncounterCalculator.deleteSetup(${index})" style="background: #dc3545; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Delete</button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        html += '<button onclick="EncounterCalculator.closeLoadMenu()" style="margin-top: 15px; background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">Cancel</button>';
+                        html += '</div>';
+                        
+                        const overlay = document.createElement('div');
+                        overlay.id = 'load-overlay';
+                        overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+                        overlay.innerHTML = html;
+                        document.body.appendChild(overlay);
+                    } catch (e) {
+                        this.showNotification('Unable to load - localStorage not available', 'error');
+                    }
+                },
+                
+                closeLoadMenu() {
+                    const overlay = document.getElementById('load-overlay');
+                    if (overlay) overlay.remove();
+                },
+                
+                loadSetup(index) {
+                    try {
+                        const setups = JSON.parse(localStorage.getItem('dndEncounterSetups') || '[]');
+                        const setup = setups[index];
+                        
+                        if (!setup) return;
+                        
+                        state.party = [];
+                        document.getElementById('party-list').innerHTML = '';
+                        state.partyId = 0;
+                        
+                        setup.party.forEach(member => {
+                            this.addPlayer();
+                            const id = state.partyId;
+                            
+                            document.getElementById(`class-${id}`).value = member.class;
+                            document.getElementById(`level-${id}`).value = member.level;
+                            document.getElementById(`weapon-${id}`).value = member.weapon;
+                            document.getElementById(`attack-bonus-${id}`).value = member.attackBonus;
+                            document.getElementById(`save-dc-${id}`).value = member.saveDC;
+                            document.getElementById(`ac-${id}`).value = member.ac;
+                            document.getElementById(`hp-${id}`).value = member.hp;
+                            if (member.feat) {
+                                document.getElementById(`feat-${id}`).value = member.feat;
+                            }
+                            if (member.bonusDPR) {
+                                document.getElementById(`bonus-dpr-${id}`).value = member.bonusDPR;
+                            }
+                        });
+                        
+                        document.getElementById('setup-name').value = setup.name;
+                        this.closeLoadMenu();
+                        this.showNotification(`Setup "${setup.name}" loaded!`);
+                    } catch (e) {
+                        this.showNotification('Unable to load setup', 'error');
+                    }
+                },
+                
+                deleteSetup(index) {
+                    try {
+                        const setups = JSON.parse(localStorage.getItem('dndEncounterSetups') || '[]');
+                        const setupName = setups[index].name;
+                        setups.splice(index, 1);
+                        localStorage.setItem('dndEncounterSetups', JSON.stringify(setups));
+                        this.closeLoadMenu();
+                        this.showNotification(`Setup "${setupName}" deleted!`);
+                        this.showLoadMenu();
+                    } catch (e) {
+                        this.showNotification('Unable to delete setup', 'error');
+                    }
+                },
+                
+                showNotification(message, type = 'success') {
+                    const notification = document.getElementById('notification');
+                    notification.textContent = message;
+                    notification.style.background = type === 'success' ? '#28a745' : '#dc3545';
+                    notification.classList.add('show');
+                    
+                    setTimeout(() => {
+                        notification.classList.remove('show');
+                    }, 3000);
+                }
+            };
+        })();
+        
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            EncounterCalculator.init();
+        });
+    </script>
+</body>
+</html>
